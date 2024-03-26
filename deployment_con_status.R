@@ -17,7 +17,7 @@ poolConn <- dbPool(odbc(), dsn = "mars14_datav2", uid = Sys.getenv("shiny_uid"),
 
 #get tables
 # current deployments_con_status table
-deployment_con_status <- odbc::dbGetQuery(poolConn, paste0("SELECT * FROM fieldwork.tbl_deployments_con_status")) 
+deployment_con_status <- odbc::dbGetQuery(poolConn, paste0("SELECT * FROM fieldwork.tbl_deployment_con_status")) 
 
 #SRT
 srt <- odbc::dbGetQuery(poolConn, paste0("SELECT * FROM fieldwork.tbl_srt")) 
@@ -166,7 +166,7 @@ all_public_deployment_phase <- srt_joined %>%
   anti_join(deployment_con_status, by = "deployment_uid")
 
 ## write to DB
-dbWriteTable(poolConn, Id(schema = "fieldwork", table = "tbl_deployments_con_status"), all_public_deployment_phase, append= TRUE, row.names = FALSE)
+dbWriteTable(poolConn, Id(schema = "fieldwork", table = "tbl_deployment_con_status"), all_public_deployment_phase, append= TRUE, row.names = FALSE)
 
 ## disconnect db
 pool::poolClose(poolConn)
