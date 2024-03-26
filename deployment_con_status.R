@@ -23,21 +23,6 @@ deployment_con_status <- odbc::dbGetQuery(poolConn, paste0("SELECT * FROM fieldw
 srt <- odbc::dbGetQuery(poolConn, paste0("SELECT * FROM fieldwork.tbl_srt")) 
 #Deployment
 deployment <- dbGetQuery(poolConn, "SELECT *, admin.fun_smp_to_system(smp_id) as system_id FROM fieldwork.viw_deployment_full WHERE smp_id like '%-%-%'") 
-# CWL data
-cwl_data_list <- dbGetQuery(poolConn, "WITH cte_smp_id_ow AS (
-                                                SELECT DISTINCT smp_id, admin.fun_smp_to_system(smp_id) as system_id, ow_suffix, ow_uid
-                                                FROM fieldwork.tbl_ow
-                                                ),
-                                                cte_CWL_uid AS (
-                                                SELECT DISTINCT ow_uid
-                                                FROM data.tbl_ow_leveldata_raw
-                                                )
-                                                SELECT *
-                                                FROM cte_CWL_uid AS l
-                                                INNER JOIN cte_smp_id_ow AS r
-                                                ON l.ow_uid = r.ow_uid
-                                                WHERE system_id like '%-%'
-                                                ")
 
 external.cipit_project <- dbGetQuery(poolConn, "SELECT * FROM external.tbl_cipit_project")
 external.smpbdv <- dbGetQuery(poolConn, "SELECT * FROM  external.tbl_smpbdv")
