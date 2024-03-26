@@ -57,7 +57,7 @@ other_deployments <- deployment %>%
 smp_milestones <- other_deployments %>%
   inner_join(smp_milestones, by = "smp_id")
 
-smp_milestones['con_phase_lookup_uid'] <- NA
+smp_milestones['con_phase_lookup_uid'] <- 4
 
 for(i in 1:nrow(smp_milestones)) {
   
@@ -131,7 +131,7 @@ for(i in 1:nrow(smp_milestones)) {
     
   } else { 
     
-    smp_milestones[i, "con_phase_lookup_uid"] <- NA
+    smp_milestones[i, "con_phase_lookup_uid"] <- 4
     
     
   }
