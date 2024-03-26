@@ -5,6 +5,7 @@
 library(tidyverse)
 library(odbc)
 library(pool)
+library(DBI)
 
 
 #Not in logical
@@ -15,13 +16,17 @@ library(pool)
 poolConn <- dbPool(odbc(), dsn = "mars14_datav2", uid = Sys.getenv("shiny_uid"), pwd = Sys.getenv("shiny_pwd"))
 
 #get tables
+# current deployments_con_status table
+deployment_con_status <- odbc::dbGetQuery(poolConn, paste0("SELECT * FROM fieldwork.tbl_deployments_con_status")) 
+
 #SRT
 srt <- odbc::dbGetQuery(poolConn, paste0("SELECT * FROM fieldwork.tbl_srt")) 
 #Deployment
-deployment <- dbGetQuery(poolConn, "SELECT *, admin.fun_smp_to_system(smp_id) as system_id FROM fieldwork.viw_deployment_full")
+deployment <- dbGetQuery(poolConn, "SELECT *, admin.fun_smp_to_system(smp_id) as system_id FROM fieldwork.viw_deployment_full WHERE smp_id like '%-%-%'") %>%
+  anti_join(deployment_con_status, by = "deployment_uid")
 # CWL data
 cwl_data_list <- dbGetQuery(poolConn, "WITH cte_smp_id_ow AS (
-                                                SELECT DISTINCT admin.fun_smp_to_system(smp_id) as system_id, ow_suffix, ow_uid
+                                                SELECT DISTINCT smp_id, admin.fun_smp_to_system(smp_id) as system_id, ow_suffix, ow_uid
                                                 FROM fieldwork.tbl_ow
                                                 ),
                                                 cte_CWL_uid AS (
@@ -159,6 +164,9 @@ other_deployment_phase <- smp_milestones %>%
 all_public_deployment_phase <- srt_joined %>%
   union_all(long_terms) %>%
   union_all(other_deployment_phase)
+
+## write to DB
+dbWriteTable(poolConn, Id(schema = "fieldwork", table = "tbl_deployments_con_status"), all_public_deployment_phase, append= TRUE, row.names = FALSE)
 
 ## disconnect db
 pool::poolClose(poolConn)
