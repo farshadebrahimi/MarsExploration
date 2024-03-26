@@ -22,8 +22,7 @@ deployment_con_status <- odbc::dbGetQuery(poolConn, paste0("SELECT * FROM fieldw
 #SRT
 srt <- odbc::dbGetQuery(poolConn, paste0("SELECT * FROM fieldwork.tbl_srt")) 
 #Deployment
-deployment <- dbGetQuery(poolConn, "SELECT *, admin.fun_smp_to_system(smp_id) as system_id FROM fieldwork.viw_deployment_full WHERE smp_id like '%-%-%'") %>%
-  anti_join(deployment_con_status, by = "deployment_uid")
+deployment <- dbGetQuery(poolConn, "SELECT *, admin.fun_smp_to_system(smp_id) as system_id FROM fieldwork.viw_deployment_full WHERE smp_id like '%-%-%'") 
 # CWL data
 cwl_data_list <- dbGetQuery(poolConn, "WITH cte_smp_id_ow AS (
                                                 SELECT DISTINCT smp_id, admin.fun_smp_to_system(smp_id) as system_id, ow_suffix, ow_uid
@@ -163,7 +162,8 @@ other_deployment_phase <- smp_milestones %>%
 # all deployment phases
 all_public_deployment_phase <- srt_joined %>%
   union_all(long_terms) %>%
-  union_all(other_deployment_phase)
+  union_all(other_deployment_phase) %>%
+  anti_join(deployment_con_status, by = "deployment_uid")
 
 ## write to DB
 dbWriteTable(poolConn, Id(schema = "fieldwork", table = "tbl_deployments_con_status"), all_public_deployment_phase, append= TRUE, row.names = FALSE)
